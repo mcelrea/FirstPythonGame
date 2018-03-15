@@ -2,82 +2,114 @@ import pygame
 import Projectile
 
 pygame.init()
-screen = pygame.display.set_mode((800,600))
+screen = pygame.display.set_mode((800, 600))
 pygame.font.init()
 myfont = pygame.font.SysFont('Comic Sans MS', 30)
+
 done = False
 
-
 player1 = pygame.image.load("smallCharacter.png")
-p1x = 100
-p1y = 100
-p1HitBox = player1.get_rect()
+player1x = 100
+player1y = 100
+player1dir = "right"
+player1HitBox = player1.get_rect()
 p1Bullets = []
-p1Dir = "right"
 
 player2 = pygame.image.load("smallCharacter.png")
-p2x = 400
-p2y = 400
-p2HitBox = player2.get_rect()
+player2x = 400
+player2y = 400
+player2HitBox = player2.get_rect()
+p2Bullets = []
+player2dir = "right"
 
 while not done:
-    # required by pygame, check for keypresses ONE time
+    #REQUIRED by pygame: check for single keypress
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            p1Bullets.append(Projectile.Bullet(p1x,p1y,p1Dir,5))
+            p1Bullets.append(Projectile.Bullet(player1x,
+                                               player1y,
+                                               5,
+                                               (255,0,0),
+                                               player1dir))
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+            p2Bullets.append(Projectile.Bullet(player2x,
+                                               player2y,
+                                               5,
+                                               (0,255,0),
+                                               player2dir))
 
-    # check for keypresses continually
+    #checking for continuous key presses
     pressed = pygame.key.get_pressed()
-    if pressed[pygame.K_RIGHT]:
-        p1x += 3
-        p1Dir = "right"
-    if pressed[pygame.K_LEFT]:
-        p1x -= 3
-        p1Dir = "left"
+    if pressed[pygame.K_w]:
+        player1y -= 3
+        player1dir = "up"
+    if pressed[pygame.K_s]:
+        player1y += 3
+        player1dir = "down"
+    if pressed[pygame.K_d]:
+        player1x += 3
+        player1dir = "right"
+    if pressed[pygame.K_a]:
+        player1x -= 3
+        player1dir = "left"
     if pressed[pygame.K_UP]:
-        p1y -= 3
-        p1Dir = "up"
+        player2y -= 3
+        player2dir = "up"
     if pressed[pygame.K_DOWN]:
-        p1y += 3
-        p1Dir = "down"
+        player2y += 3
+        player2dir = "down"
+    if pressed[pygame.K_RIGHT]:
+        player2x += 3
+        player2dir = "right"
+    if pressed[pygame.K_LEFT]:
+        player2x -= 3
+        player2dir = "left"
 
-    # update hit boxes
-    p1HitBox.x = p1x
-    p1HitBox.y = p1y
-    p2HitBox.x = p2x
-    p2HitBox.y = p2y
+    #updating player hit boxes
+    player1HitBox.x = player1x
+    player1HitBox.y = player1y
+    player2HitBox.x = player2x
+    player2HitBox.y = player2y
 
-    # move the bullets
+    #move bullets
     for b in p1Bullets:
         b.move()
-        if b.isOffScreen() == True:
+        if b.isOffScreen(screen):
             p1Bullets.remove(b)
-        elif b.isColliding(p2HitBox):
+        elif b.hasHit(player2HitBox):
             p1Bullets.remove(b)
+    for b in p2Bullets:
+        b.move()
+        if b.isOffScreen(screen):
+            p2Bullets.remove(b)
+        elif b.hasHit(player1HitBox):
+            p2Bullets.remove(b)
 
-    # check for collisions
-    if p1HitBox.colliderect(p2HitBox):
-        p1HitBox.x = 10
-        p1HitBox.y = 10
-        p1x = 10
-        p1y = 10
+    #checking for collisions
+    if player1HitBox.colliderect(player2HitBox):
+        player1x = 0
+        player1y = 0
 
-    # draw all the graphics
+    #drawing graphics
     screen.fill((0,0,0))
-    textsurface = myfont.render("Bullets: " + str(len(p1Bullets)), False, (255, 255, 255))
+    textsurface = myfont.render("Bullets: " + str(len(p1Bullets)), False, (255, 0, 255))
     screen.blit(textsurface, (0, 0))
     for b in p1Bullets:
         b.draw(screen)
+    for b in p2Bullets:
+        b.draw(screen)
+
+    screen.blit(player1, (player1x, player1y))
+    screen.blit(player2, (player2x, player2y))
+
     pygame.draw.rect(screen,
                      (0,255,0),
-                     p1HitBox,
+                     player1HitBox,
                      1)
     pygame.draw.rect(screen,
                      (0, 255, 0),
-                     p2HitBox,
+                     player2HitBox,
                      1)
-    screen.blit(player1, (p1x,p1y))
-    screen.blit(player2, (p2x, p2y))
     pygame.display.flip()
