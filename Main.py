@@ -3,6 +3,8 @@ import Projectile
 
 pygame.init()
 screen = pygame.display.set_mode((800,600))
+pygame.font.init()
+myfont = pygame.font.SysFont('Comic Sans MS', 30)
 done = False
 
 
@@ -50,6 +52,10 @@ while not done:
     # move the bullets
     for b in p1Bullets:
         b.move()
+        if b.isOffScreen() == True:
+            p1Bullets.remove(b)
+        elif b.isColliding(p2HitBox):
+            p1Bullets.remove(b)
 
     # check for collisions
     if p1HitBox.colliderect(p2HitBox):
@@ -60,6 +66,8 @@ while not done:
 
     # draw all the graphics
     screen.fill((0,0,0))
+    textsurface = myfont.render("Bullets: " + str(len(p1Bullets)), False, (255, 255, 255))
+    screen.blit(textsurface, (0, 0))
     for b in p1Bullets:
         b.draw(screen)
     pygame.draw.rect(screen,
